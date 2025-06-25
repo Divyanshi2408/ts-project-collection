@@ -45,5 +45,6 @@ npm run dev
 - Handle APIs and async state with confidence
 - Validate user input with type-safe schemas
 - Simulate fullstack app features with scalable structure
-
-
+  
+## 💬 Contact
+📧 [divyanshipal2808@gmail.com]

@@ -1,35 +1,89 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from 'react';
+import { words } from './words';
+import type { GameState } from './types';
 
-function App() {
-  const [count, setCount] = useState(0)
+const getRandomWord = () => {
+  const index = Math.floor(Math.random() * words.length);
+  return words[index];
+};
+
+export default function App() {
+  const [game, setGame] = useState<GameState>({
+    currentWord: getRandomWord(),
+    userInput: "",
+    score: 0,
+    timeLeft: 30,
+    isGameOver: false,
+  });
+
+  // Timer logic
+  useEffect(() => {
+    if (game.isGameOver || game.timeLeft <= 0) return;
+
+    const interval = setInterval(() => {
+      setGame(prev => {
+        if (prev.timeLeft <= 1) {
+          return { ...prev, isGameOver: true, timeLeft: 0 };
+        }
+        return { ...prev, timeLeft: prev.timeLeft - 1 };
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [game.isGameOver, game.timeLeft]);
+
+  // Input change handler (fixed with correct state access)
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    setGame(prev => {
+      if (value === prev.currentWord) {
+        return {
+          ...prev,
+          score: prev.score + 1,
+          currentWord: getRandomWord(),
+          userInput: "",
+        };
+      }
+
+      return {
+        ...prev,
+        userInput: value,
+      };
+    });
+  };
+
+  const resetGame = () => {
+    setGame({
+      currentWord: getRandomWord(),
+      userInput: "",
+      score: 0,
+      timeLeft: 30,
+      isGameOver: false,
+    });
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div style={{ padding: 30, textAlign: "center" }}>
+      <h2>🧠 Typing Game</h2>
+      <h3>{game.isGameOver ? "Game Over" : "Type the word below"}</h3>
+      <h1 style={{ color: "#007acc" }}>{game.currentWord}</h1>
 
-export default App
+      {!game.isGameOver && (
+        <input
+          type="text"
+          value={game.userInput}
+          onChange={handleChange}
+          placeholder="Start typing..."
+          autoFocus
+        />
+      )}
+
+      <div style={{ marginTop: 20 }}>
+        <p>⏳ Time Left: {game.timeLeft}s</p>
+        <p>🏆 Score: {game.score}</p>
+        {game.isGameOver && <button onClick={resetGame}>🔁 Restart</button>}
+      </div>
+    </div>
+  );
+}

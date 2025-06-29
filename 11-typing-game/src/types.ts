@@ -1,6 +1,7 @@
 export interface GameState {
   currentWord: string;
+  userInput: string;
   score: number;
-  time: number;
-  isPlaying: boolean;
+  timeLeft: number;
+  isGameOver: boolean;
 }
